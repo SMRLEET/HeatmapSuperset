@@ -6,10 +6,6 @@ This is the Heatmap Superset Chart Plugin.
 
 Copy this folder to `superset-frontend/plugins/plugin-chart-echarts/src`
 
-```
-"extends": "../../tsconfig.json",
-```
-
 After this edit the `superset-frontend/plugins/plugin-chart-echarts/src/index.ts` and make the following changes:
 
 Add
