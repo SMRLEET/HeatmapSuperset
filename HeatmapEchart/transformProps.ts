@@ -17,6 +17,7 @@
  * under the License.
  */
 import {
+  DataRecordValue,
   TimeseriesDataRecord,
   getNumberFormatter,
   getSequentialSchemeRegistry,
@@ -37,12 +38,22 @@ import {
   labelFormatter,
 } from './utils/formatters'
 
-import { EchartsHeatmapChartProps, HeatmapProps } from './types';
+import { CrossFilterAxisSelection, EchartsHeatmapChartProps, HeatmapProps } from './types';
 import _ from 'lodash';
+import { OpacityEnum } from '../constants';
+import { Refs } from '../types';
+import { getColtypesMapping } from '../utils/series';
 
 export default function transformProps(chartProps: EchartsHeatmapChartProps): HeatmapProps {
 
-  const { width, height, formData, queriesData } = chartProps;
+  const {
+    width,
+    height,
+    formData,
+    hooks,
+    queriesData,
+    filterState,
+    emitCrossFilters } = chartProps;
   const {
     linearColorScheme,
     showValues,
@@ -60,24 +71,50 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
     dateFormat,
     showXName,
     showYName,
-    allColumnsX,
-    allColumnsY,
-    xAxisRotate
+    columnX,
+    columnY,
+    xAxisRotate,
+    crossFilterAxisSelection
   } = formData;
-
+  console.log('queriesDataHeat',queriesData[0])
   const numberFormatter = getNumberFormatter(numberFormat);
   const timeFormatter = getTimeFormatter(dateFormat);
-
+  const refs: Refs = {};
   const data = queriesData[0].data as TimeseriesDataRecord[];
+
+  const coltypeMapping = getColtypesMapping(queriesData[0]);
   const colTypes = queriesData[0].coltypes;
+
+  const { setDataMask = () => { }, onContextMenu } = hooks;
 
   const yAxis = _.uniq(data.map((element) => element[queriesData[0].colnames[1]]));
   const xAxis = _.uniq(data.map((element) => element[queriesData[0].colnames[0]]));
 
-  const metrics = data.map((element) =>
-    [element[queriesData[0].colnames[0]]?.toString(),
-    element[queriesData[0].colnames[1]]?.toString(),
-    element[queriesData[0].colnames[2]]]);
+
+  console.log('filterStateHeat',filterState)
+  const transformedData = data.map(datum => {
+    const xAxis = datum[queriesData[0].colnames[0]]
+    const yAxis = datum[queriesData[0].colnames[1]]
+    const isFiltered =
+      filterState.selectedValues
+      && !filterState.selectedValues.includes(xAxis)
+      && !filterState.selectedValues.includes(yAxis);
+      if(isFiltered) console.log(isFiltered)
+    return {
+      value: [datum[queriesData[0].colnames[0]]?.toString(),
+      datum[queriesData[0].colnames[1]]?.toString(),
+      datum[queriesData[0].colnames[2]]],
+      name: crossFilterAxisSelection == CrossFilterAxisSelection.Xaxis
+        ? datum[queriesData[0].colnames[0]]?.toString()
+        : datum[queriesData[0].colnames[1]]?.toString(),
+      itemStyle: {
+        opacity: isFiltered
+          ? OpacityEnum.SemiTransparent
+          : OpacityEnum.NonTransparent,
+      },
+    };
+  });
+
 
   const colorSet = getSequentialSchemeRegistry().get(linearColorScheme)?.colors;
 
@@ -110,7 +147,7 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
       splitArea: {
         show: showXaxisSplitlines,
       },
-      ...(showXName && { name: allColumnsX.label ? allColumnsX.label : allColumnsX }),
+      ...(showXName && { name: columnX.label ? columnX.label : columnX }),
       axisLabel: {
         show: showXaxisLabel,
         rotate: xAxisRotate
@@ -123,18 +160,30 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
       splitArea: {
         show: showYaxisSplitlines,
       },
-      ...(showYName && { name: allColumnsY.label ? allColumnsY.label : allColumnsY }),
+      ...(showYName && { name: columnY.label ? columnY.label : columnY }),
       axisLabel: {
         show: showYaxisLabel,
-        
       }
     },
   }
+  const selectedValues = (filterState.selectedValues || []).reduce(
+    (acc: Record<string, number>, selectedValue: string) => {
+      const index = transformedData.findIndex(
+        ({ name }) => name === selectedValue,
+      )
+        ;
+      return {
+        ...acc,
+        [index]: selectedValue,
+      };
+    },
+    {},
+  );
 
   const heatmapSeries = [
     {
       type: 'heatmap',
-      data: metrics,
+      data: transformedData,
       label: {
         show: showValues,
         formatter: (data: CallbackDataParams) =>
@@ -149,7 +198,13 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
     }
   ];
 
-  const heatmapOptions = {
+  const labelMap =
+    getMapedAxisArray((crossFilterAxisSelection
+      == CrossFilterAxisSelection.Xaxis ?
+      xAxis : yAxis));
+
+
+  const echartOptions = {
     tooltip: {
       position: 'top',
       formatter: tooltipFormatter,
@@ -168,10 +223,28 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
     },
     series: heatmapSeries
   };
-  console.log('heatmapOptions',heatmapOptions)
+  console.log('coltypeMappingHeat',coltypeMapping)
   return {
     width,
     height,
-    heatmapOptions,
+    refs,
+    echartOptions,
+    formData,
+    setDataMask,
+    emitCrossFilters,
+    labelMap,
+    selectedValues,
+    onContextMenu,
+    coltypeMapping,
+    groupby: [crossFilterAxisSelection == CrossFilterAxisSelection.Xaxis ? columnX : columnY]
   };
+}
+
+function getMapedAxisArray(axisArray: DataRecordValue[]) {
+  return axisArray.reduce((acc: Record<string, string[]>, datum: string) => {
+    return {
+      ...acc,
+      [datum]: [datum],
+    };
+  }, {});
 }

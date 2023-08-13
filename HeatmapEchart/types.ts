@@ -17,14 +17,15 @@
  * under the License.
  */
 import {
-  ChartProps,
-  PlainObject,
-  QueryData,
   QueryFormData,
   TimeseriesDataRecord,
 } from '@superset-ui/core';
-import { EChartsCoreOption } from 'echarts';
-import { EchartsStylesProps } from '../types';
+import {
+  BaseChartProps,
+  BaseTransformedProps,
+  ContextMenuTransformedProps,
+  CrossFilterTransformedProps
+} from '../types';
 
 
 
@@ -35,6 +36,11 @@ export enum EchartsHeatmapLabelTypeType {
   KeyPercent,
   Percent,
   KeyValuePercent,
+}
+
+export enum CrossFilterAxisSelection {
+  Xaxis,
+  Yaxis,
 }
 
 export enum AxisType {
@@ -58,9 +64,7 @@ export interface AllColumn {
   sqlExpression: string;
 }
 
-export interface BaseChartProps<T extends PlainObject> extends ChartProps<T> {
-  queriesData: QueryData[];
-}
+
 
 export type HeatmapCustomiseFormData = {
   linearColorScheme: string;
@@ -84,17 +88,21 @@ export type AxisFormData = {
   showYaxisSplitlines: boolean;
   showXName: boolean;
   showYName: boolean;
-  xAxisRotate:Number;
+  xAxisRotate: Number;
 }
 
 export type HeatmapDataFormData = {
-
   allColumnsX: TimeseriesDataRecord;
   allColumnsY: TimeseriesDataRecord;
 }
 
+export type EventDataFormData = {
+  crossFilterAxisSelection: CrossFilterAxisSelection;
+}
+
 export type HeatmapFormData =
-  QueryFormData & AxisFormData & HeatmapCustomiseFormData & HeatmapDataFormData;
+  QueryFormData & AxisFormData & HeatmapCustomiseFormData
+  & HeatmapDataFormData & EventDataFormData;
 
 export interface EchartsHeatmapChartProps extends BaseChartProps<HeatmapFormData> {
   formData: HeatmapFormData;
@@ -102,7 +110,6 @@ export interface EchartsHeatmapChartProps extends BaseChartProps<HeatmapFormData
 
 
 
-export type HeatmapProps = EchartsStylesProps & {
-  heatmapOptions: EChartsCoreOption;
-};
-
+export type HeatmapProps = BaseTransformedProps<HeatmapFormData> &
+  CrossFilterTransformedProps &
+  ContextMenuTransformedProps;

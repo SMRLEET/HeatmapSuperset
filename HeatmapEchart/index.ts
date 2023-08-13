@@ -22,10 +22,14 @@ import controlPanel from './controlPanel';
 import transformProps from './transformProps';
 import thumbnail from './images/thumbnail.png';
 import { EchartsChartPlugin } from '../types';
+import {  EchartsHeatmapChartProps, HeatmapFormData} from './types';
 
 
 
-export default class EChartHeatmapChartPlugin extends EchartsChartPlugin {
+export default class EChartHeatmapChartPlugin extends EchartsChartPlugin<
+HeatmapFormData,
+EchartsHeatmapChartProps
+> {
   /**
    * The constructor is used to pass relevant metadata and callbacks that get
    * registered in respective registries that are used throughout the library

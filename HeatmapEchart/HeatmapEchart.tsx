@@ -1,17 +1,21 @@
-import React, { createRef } from 'react';
+import React from 'react';
 import { HeatmapProps } from './types';
 import Echart from '../components/Echart';
+import { allEventHandlers } from '../utils/eventHandlers';
 export default function HeatmapEchart(props: HeatmapProps) {
-  const { height, width, heatmapOptions } = props;
-  const rootElem = createRef<HTMLDivElement>();
+  const { height, width, echartOptions, selectedValues, refs } = props;
+
+  const eventHandlers = allEventHandlers(props);
+
+
   return (
     <Echart
-      echartOptions={heatmapOptions}
+      refs={refs}
       height={height}
-      width={width} refs={{
-        echartRef: undefined,
-        divRef: rootElem
-      }} />
-
+      width={width}
+      echartOptions={echartOptions}
+      eventHandlers={eventHandlers}
+      selectedValues={selectedValues}
+    />
   );
 }
