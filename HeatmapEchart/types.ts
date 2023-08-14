@@ -16,18 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {
-  QueryFormData,
-  TimeseriesDataRecord,
-} from '@superset-ui/core';
+import { QueryFormData, TimeseriesDataRecord } from '@superset-ui/core';
 import {
   BaseChartProps,
   BaseTransformedProps,
   ContextMenuTransformedProps,
-  CrossFilterTransformedProps
+  CrossFilterTransformedProps,
 } from '../types';
-
-
 
 export enum EchartsHeatmapLabelTypeType {
   Key,
@@ -39,8 +34,8 @@ export enum EchartsHeatmapLabelTypeType {
 }
 
 export enum CrossFilterAxisSelection {
-  Xaxis,
-  Yaxis,
+  xAxis,
+  yAxis,
 }
 
 export enum AxisType {
@@ -55,7 +50,7 @@ export enum VisualMapPosition {
   Right,
   Top,
   Bottom,
-  Hide
+  Hide,
 }
 
 export interface AllColumn {
@@ -63,8 +58,6 @@ export interface AllColumn {
   label: string;
   sqlExpression: string;
 }
-
-
 
 export type HeatmapCustomiseFormData = {
   linearColorScheme: string;
@@ -77,9 +70,7 @@ export type HeatmapCustomiseFormData = {
   rightMargin: number | string;
   numberFormat: string;
   dateFormat: string;
-}
-
-
+};
 
 export type AxisFormData = {
   showXaxisLabel: boolean;
@@ -89,26 +80,27 @@ export type AxisFormData = {
   showXName: boolean;
   showYName: boolean;
   xAxisRotate: Number;
-}
+};
 
 export type HeatmapDataFormData = {
   allColumnsX: TimeseriesDataRecord;
   allColumnsY: TimeseriesDataRecord;
-}
+};
 
 export type EventDataFormData = {
   crossFilterAxisSelection: CrossFilterAxisSelection;
-}
+};
 
-export type HeatmapFormData =
-  QueryFormData & AxisFormData & HeatmapCustomiseFormData
-  & HeatmapDataFormData & EventDataFormData;
+export type HeatmapFormData = QueryFormData &
+  AxisFormData &
+  HeatmapCustomiseFormData &
+  HeatmapDataFormData &
+  EventDataFormData;
 
-export interface EchartsHeatmapChartProps extends BaseChartProps<HeatmapFormData> {
+export interface EchartsHeatmapChartProps
+  extends BaseChartProps<HeatmapFormData> {
   formData: HeatmapFormData;
 }
-
-
 
 export type HeatmapProps = BaseTransformedProps<HeatmapFormData> &
   CrossFilterTransformedProps &

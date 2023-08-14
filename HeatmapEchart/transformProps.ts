@@ -1,3 +1,4 @@
+/* eslint-disable theme-colors/no-literal-colors */
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -26,26 +27,35 @@ import {
 
 import { CallbackDataParams } from 'echarts/types/src/util/types';
 
-import {
-  getVisualMapPosition,
-  setMargin
-} from './utils/utils';
-
+import _ from 'lodash';
+import { getVisualMapPosition, setMargin } from './utils/utils';
 import {
   formatHeatmapLabel,
-
   getAxisType,
   labelFormatter,
-} from './utils/formatters'
-
-import { CrossFilterAxisSelection, EchartsHeatmapChartProps, HeatmapProps } from './types';
-import _ from 'lodash';
+} from './utils/formatters';
+import {
+  CrossFilterAxisSelection,
+  EchartsHeatmapChartProps,
+  HeatmapProps,
+} from './types';
 import { OpacityEnum } from '../constants';
 import { Refs } from '../types';
 import { getColtypesMapping } from '../utils/series';
 
-export default function transformProps(chartProps: EchartsHeatmapChartProps): HeatmapProps {
+function getLabelMap(axisArray: DataRecordValue[]) {
+  return axisArray.reduce(
+    (acc: Record<string, string[]>, datum: string) => ({
+      ...acc,
+      [datum]: [datum],
+    }),
+    {},
+  );
+}
 
+export default function transformProps(
+  chartProps: EchartsHeatmapChartProps,
+): HeatmapProps {
   const {
     width,
     height,
@@ -53,7 +63,8 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
     hooks,
     queriesData,
     filterState,
-    emitCrossFilters } = chartProps;
+    emitCrossFilters,
+  } = chartProps;
   const {
     linearColorScheme,
     showValues,
@@ -74,9 +85,8 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
     columnX,
     columnY,
     xAxisRotate,
-    crossFilterAxisSelection
+    crossFilterAxisSelection,
   } = formData;
-  console.log('queriesDataHeat',queriesData[0])
   const numberFormatter = getNumberFormatter(numberFormat);
   const timeFormatter = getTimeFormatter(dateFormat);
   const refs: Refs = {};
@@ -85,28 +95,32 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
   const coltypeMapping = getColtypesMapping(queriesData[0]);
   const colTypes = queriesData[0].coltypes;
 
-  const { setDataMask = () => { }, onContextMenu } = hooks;
+  const { setDataMask = () => {}, onContextMenu } = hooks;
 
-  const yAxis = _.uniq(data.map((element) => element[queriesData[0].colnames[1]]));
-  const xAxis = _.uniq(data.map((element) => element[queriesData[0].colnames[0]]));
+  const yAxis = _.uniq(
+    data.map(element => element[queriesData[0].colnames[1]]),
+  );
+  const xAxis = _.uniq(
+    data.map(element => element[queriesData[0].colnames[0]]),
+  );
 
-
-  console.log('filterStateHeat',filterState)
   const transformedData = data.map(datum => {
-    const xAxis = datum[queriesData[0].colnames[0]]
-    const yAxis = datum[queriesData[0].colnames[1]]
+    const xAxis = datum[queriesData[0].colnames[0]];
+    const yAxis = datum[queriesData[0].colnames[1]];
     const isFiltered =
-      filterState.selectedValues
-      && !filterState.selectedValues.includes(xAxis)
-      && !filterState.selectedValues.includes(yAxis);
-      if(isFiltered) console.log(isFiltered)
+      filterState.selectedValues &&
+      !filterState.selectedValues.includes(xAxis) &&
+      !filterState.selectedValues.includes(yAxis);
     return {
-      value: [datum[queriesData[0].colnames[0]]?.toString(),
-      datum[queriesData[0].colnames[1]]?.toString(),
-      datum[queriesData[0].colnames[2]]],
-      name: crossFilterAxisSelection == CrossFilterAxisSelection.Xaxis
-        ? datum[queriesData[0].colnames[0]]?.toString()
-        : datum[queriesData[0].colnames[1]]?.toString(),
+      value: [
+        datum[queriesData[0].colnames[0]]?.toString(),
+        datum[queriesData[0].colnames[1]]?.toString(),
+        datum[queriesData[0].colnames[2]],
+      ],
+      name:
+        crossFilterAxisSelection === CrossFilterAxisSelection.xAxis
+          ? datum[queriesData[0].colnames[0]]?.toString()
+          : datum[queriesData[0].colnames[1]]?.toString(),
       itemStyle: {
         opacity: isFiltered
           ? OpacityEnum.SemiTransparent
@@ -115,11 +129,11 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
     };
   });
 
-
   const colorSet = getSequentialSchemeRegistry().get(linearColorScheme)?.colors;
 
-  const metricsValues = data.map(element =>
-    element[queriesData[0].colnames[2]]) as number[];
+  const metricsValues = data.map(
+    element => element[queriesData[0].colnames[2]],
+  ) as number[];
 
   const min = Math.min(...metricsValues);
   const max = Math.max(...metricsValues);
@@ -127,20 +141,23 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
   const xAxisDataType = getAxisType(colTypes[0]);
   const yAxisDataType = getAxisType(colTypes[1]);
 
-  const sum = labelType > 2 || showPerc ?
-    metricsValues.reduce((partialSum, a) => partialSum + a, 0) : 1;
+  const sum =
+    labelType > 2 || showPerc
+      ? metricsValues.reduce((partialSum, a) => partialSum + a, 0)
+      : 1;
 
   const tooltipFormatter = (params: CallbackDataParams) =>
-    formatHeatmapLabel(params,
+    formatHeatmapLabel(
+      params,
       labelType,
       numberFormatter,
       timeFormatter,
       sum,
       xAxisDataType,
-      yAxisDataType);
+      yAxisDataType,
+    );
 
   const axis = {
-
     xAxis: {
       type: 'category',
       data: xAxis,
@@ -150,8 +167,8 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
       ...(showXName && { name: columnX.label ? columnX.label : columnX }),
       axisLabel: {
         show: showXaxisLabel,
-        rotate: xAxisRotate
-      }
+        rotate: xAxisRotate,
+      },
     },
 
     yAxis: {
@@ -163,15 +180,14 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
       ...(showYName && { name: columnY.label ? columnY.label : columnY }),
       axisLabel: {
         show: showYaxisLabel,
-      }
+      },
     },
-  }
+  };
   const selectedValues = (filterState.selectedValues || []).reduce(
     (acc: Record<string, number>, selectedValue: string) => {
       const index = transformedData.findIndex(
         ({ name }) => name === selectedValue,
-      )
-        ;
+      );
       return {
         ...acc,
         [index]: selectedValue,
@@ -187,22 +203,20 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
       label: {
         show: showValues,
         formatter: (data: CallbackDataParams) =>
-          labelFormatter(data, numberFormatter, sum, showPerc)
+          labelFormatter(data, numberFormatter, sum, showPerc),
       },
       emphasis: {
         itemStyle: {
           shadowBlur: 10,
-          shadowColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      }
-    }
+          shadowColor: 'rgba(0, 0, 0, 0.5)',
+        },
+      },
+    },
   ];
 
-  const labelMap =
-    getMapedAxisArray((crossFilterAxisSelection
-      == CrossFilterAxisSelection.Xaxis ?
-      xAxis : yAxis));
-
+  const labelMap = getLabelMap(
+    crossFilterAxisSelection === CrossFilterAxisSelection.xAxis ? xAxis : yAxis,
+  );
 
   const echartOptions = {
     tooltip: {
@@ -210,20 +224,19 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
       formatter: tooltipFormatter,
     },
     grid: {
-      ...setMargin(leftMargin, rightMargin, topMargin)
+      ...setMargin(leftMargin, rightMargin, topMargin),
     },
     ...axis,
     visualMap: {
-      min: min,
-      max: max,
+      min,
+      max,
       ...getVisualMapPosition(visualMapPosition),
       inRange: {
-        color: colorSet
+        color: colorSet,
       },
     },
-    series: heatmapSeries
+    series: heatmapSeries,
   };
-  console.log('coltypeMappingHeat',coltypeMapping)
   return {
     width,
     height,
@@ -236,15 +249,10 @@ export default function transformProps(chartProps: EchartsHeatmapChartProps): He
     selectedValues,
     onContextMenu,
     coltypeMapping,
-    groupby: [crossFilterAxisSelection == CrossFilterAxisSelection.Xaxis ? columnX : columnY]
+    groupby: [
+      crossFilterAxisSelection === CrossFilterAxisSelection.xAxis
+        ? columnX
+        : columnY,
+    ],
   };
-}
-
-function getMapedAxisArray(axisArray: DataRecordValue[]) {
-  return axisArray.reduce((acc: Record<string, string[]>, datum: string) => {
-    return {
-      ...acc,
-      [datum]: [datum],
-    };
-  }, {});
 }

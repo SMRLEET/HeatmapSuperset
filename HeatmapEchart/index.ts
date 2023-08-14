@@ -16,19 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { t, ChartMetadata,} from '@superset-ui/core';
+import { t, ChartMetadata, Behavior } from '@superset-ui/core';
 import buildQuery from './buildQuery';
 import controlPanel from './controlPanel';
 import transformProps from './transformProps';
 import thumbnail from './images/thumbnail.png';
 import { EchartsChartPlugin } from '../types';
-import {  EchartsHeatmapChartProps, HeatmapFormData} from './types';
-
-
+import { EchartsHeatmapChartProps, HeatmapFormData } from './types';
 
 export default class EChartHeatmapChartPlugin extends EchartsChartPlugin<
-HeatmapFormData,
-EchartsHeatmapChartProps
+  HeatmapFormData,
+  EchartsHeatmapChartProps
 > {
   /**
    * The constructor is used to pass relevant metadata and callbacks that get
@@ -46,6 +44,7 @@ EchartsHeatmapChartProps
       description: t(
         'Visualize a related metric across pairs of groups. Heatmaps excel at showcasing the correlation or strength between two groups. Color is used to emphasize the strength of the link between each pair of groups.',
       ),
+      behaviors: [Behavior.INTERACTIVE_CHART],
       exampleGallery: [{ url: thumbnail }],
       name: t('Heatmap Chart'),
       tags: [

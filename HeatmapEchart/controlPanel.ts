@@ -1,4 +1,9 @@
-import { FeatureFlag, isFeatureEnabled, t, validateNonEmpty } from '@superset-ui/core';
+import {
+  FeatureFlag,
+  isFeatureEnabled,
+  t,
+  validateNonEmpty,
+} from '@superset-ui/core';
 import {
   ControlPanelConfig,
   ControlPanelState,
@@ -9,7 +14,11 @@ import {
   sections,
   sharedControls,
 } from '@superset-ui/chart-controls';
-import {  CrossFilterAxisSelection, EchartsHeatmapLabelTypeType, VisualMapPosition } from './types';
+import {
+  CrossFilterAxisSelection,
+  EchartsHeatmapLabelTypeType,
+  VisualMapPosition,
+} from './types';
 
 const allColumns = {
   type: 'SelectControl',
@@ -222,14 +231,8 @@ const config: ControlPanelConfig = {
                 [VisualMapPosition.Left, t('Left')],
                 [VisualMapPosition.Right, t('Right')],
                 [VisualMapPosition.Top, t('Top')],
-                [
-                  VisualMapPosition.Bottom,
-                  t('Bottom'),
-                ],
-                [
-                  VisualMapPosition.Hide,
-                  t('Hide'),
-                ],
+                [VisualMapPosition.Bottom, t('Bottom')],
+                [VisualMapPosition.Hide, t('Hide')],
               ],
             },
           },
@@ -240,12 +243,12 @@ const config: ControlPanelConfig = {
             config: {
               type: 'SelectControl',
               label: t('Cross Filter Axis Selection'),
-              default: CrossFilterAxisSelection.Xaxis,
+              default: CrossFilterAxisSelection.xAxis,
               renderTrigger: true,
               clearable: false,
               choices: [
-                [CrossFilterAxisSelection.Xaxis, t('X axis')],
-                [CrossFilterAxisSelection.Yaxis, t('Y axis')],
+                [CrossFilterAxisSelection.xAxis, t('X axis')],
+                [CrossFilterAxisSelection.yAxis, t('Y axis')],
               ],
             },
           },
@@ -400,7 +403,6 @@ const config: ControlPanelConfig = {
             },
           },
         ],
-
       ],
     },
   ],
